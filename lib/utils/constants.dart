@@ -1,38 +1,21 @@
 import 'package:flutter/material.dart';
 
-
-const String NETSENSEURL = "https://borreapp.netsense.nl";
+// the years from 2007 until 2011 were manually converted and are not available
+// on the internet. Starting from 2012 they are available
+const int LOCALYEAR = 2007;
+const int REMOTEYEAR = 2012;
 const String PRODUCTIONURL = "https://fosdem.org/";
-String MAINURL = PRODUCTIONURL;
-const String CHECKCLIENTURL="/app/index.php?action=CheckClient";
-const String GETEVENTURL="/schedule/xml";
 const String ARCHIVEURL="https://archive.fosdem.org/";
-const String GETBOOKCATEGORIES="/app/index.php?action=GetBookCategories";
-const String GETBOOKPAGEURL="/app/index.php?action=GetBookPage";
-const String GETBOOKPAGEAUDIOURL="/app/index.php?action=GetBookAudio";
-const String DECREMENTDOWNLOADCOUNTURL="/app/index.php?action=DecrementDownloadCount";
-// date the app was published. Used to calculate if any warnings should still be displayed.
-const String APPINSTORE="2020-06-20T00:00:00Z";
+String MAINURL = PRODUCTIONURL;
+const String GETEVENTURL="/schedule/xml";
 
-const String GROUP = "&Group=";
-const String CLIENTID = "&ClientId=";
-const String POSTCODE = "&PostCode=";
-const String BOOKPAGE = "&Page=";
-const String BOOKCODE = "&BookCode=";
-const String LOGIN_FAILED="Onjuist lidnummer of postcode.";
-const String ERROR="""Fout
-""";
 const String NOT_AUTHORIZED="""Authenticatie mislukt, probeer a.u.b. opnieuw in te loggen
 \nAls het probleem aanhoudt, neem dan contact op met Borre Educatief bv.""";
 const String NO_NETWORK="""Er is geen verbinding met het netwerk
 Controleer je verbinding en probeer het opnieuw.""";
 const String OK="OK";
 const  String CANCEL="Annuleren";
-const String NEW_VERSION_AVAILABLE="Van dit boek is een nieuwe versie beschikbaar. Wil je deze nu downloaden, of het boek lezen?";
-const String DOWNLOAD_NEW_VERSION="Downloaden";
-const String READ_BOOK="Boek lezen";
 const int RUNDEBUGCODE = 0;
-const int FREEGROUP = 10;
 const double iconSize = 40.0;
 
 
@@ -44,21 +27,21 @@ enum ConnectivityStatus {
   Cellular,
   Offline
 }
-const debug = DebugLevel.XMLJSONParsing;
+const debug = DebugLevel.All;
 const debugDownload = false;
-const Color borreColor1 = Color(0xFFC3E0E4);
-const Color borreColor2 = Color(0xFF5DB3BE);
-const Color borreColor1ligther = Color(0x90C3E0E4);
-const Color borreColor3 = Color(0xFF91CBD4);
-const Color borreColorButtonBackground = Color(0xFF8FCDD5);
-const Color borreColorButtonTekst = Color(0xFF4C949A);
+const Color fosdemColor1 = Color(0xFFC3E0E4);
+const Color fosdemColor2 = Color(0xFF5DB3BE);
+const Color fosdemColor1ligther = Color(0x90C3E0E4);
+const Color fosdemColor3 = Color(0xFF91CBD4);
+const Color fosdemColorButtonBackground = Color(0xFF8FCDD5);
+const Color fosdemColorButtonTekst = Color(0xFF4C949A);
 
 final ButtonStyle raisedButtonStyle = ElevatedButton.styleFrom(
   elevation: 10.0,
   //onPrimary: Colors.black87,
-  //primary: borreColor2,
-  textStyle: TextStyle(color: borreColor1),
-  backgroundColor: borreColor1,
+  //primary: fosdemColor2,
+  textStyle: TextStyle(color: fosdemColor1),
+  backgroundColor: fosdemColor1,
   minimumSize: Size(88, 36),
   padding: EdgeInsets.symmetric(horizontal: 16),
   shape: const RoundedRectangleBorder(
@@ -66,12 +49,12 @@ final ButtonStyle raisedButtonStyle = ElevatedButton.styleFrom(
   ),
 );
 
-final ButtonStyle borreButtonStyle = ElevatedButton.styleFrom(
+final ButtonStyle fosdemButtonStyle = ElevatedButton.styleFrom(
   elevation: 10.0,
   //onPrimary: Colors.black87,
-  //primary: borreColor2,
-  textStyle: TextStyle(color: borreColorButtonTekst),
-  backgroundColor: borreColor1,
+  //primary: fosdemColor2,
+  textStyle: TextStyle(color: fosdemColorButtonTekst),
+  backgroundColor: fosdemColor1,
   minimumSize: Size(88, 36),
   padding: EdgeInsets.symmetric(horizontal: 16),
   shape: const RoundedRectangleBorder(

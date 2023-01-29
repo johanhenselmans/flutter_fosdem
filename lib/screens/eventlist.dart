@@ -65,14 +65,37 @@ class _EventListState extends State<EventList> {
 
   Widget showSearchableList(eventList) {
     return SearchableList<Event>(
-      initialList: eventList,
+      //initialList: eventList,
       builder: (Event anEvent) => EventItem(event: anEvent),
-      filter: (value) => eventList
-          .where(
-            (element) => element.title.toLowerCase().contains(value),
-          )
-          .toList(),
+      loadingWidget: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [
+          CircularProgressIndicator(),
+          SizedBox(
+            height: 20,
+          ),
+          Text('Loading events...')
+        ],
+      ),asyncListCallback: () async {
+        await Future.delayed(
+          const Duration(
+            milliseconds: 10000,
+          ),
+        );
+        return eventList;
+      },asyncListFilter: (q, aList) {
+        return aList
+            .where((element) => element.title.contains(q))
+            .toList();
+      },
+//      filter: (value) => eventList
+//          .swhere(
+//            (element) => element.title.toLowerCase().contains(value),
+//          )
+//          .toList(),
+      onItemSelected: (Event item) {},
       emptyWidget: const EmptyView(),
+
       inputDecoration: InputDecoration(
         labelText: "Search Events",
         fillColor: Colors.white,
@@ -126,48 +149,62 @@ class EventItem extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Container(
-        height: 60,
+        //height: 60,
         decoration: BoxDecoration(
           color: Colors.grey[200],
           borderRadius: BorderRadius.circular(10),
         ),
         child: Row(
           children: [
-            const SizedBox(
-              width: 10,
-            ),
-            Icon(
-              Icons.star,
-              color: Colors.yellow[700],
-            ),
-            const SizedBox(
-              width: 10,
-            ),
+            Expanded(child:
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  'Firstname: ${event.title}',
+                  '${event.title}',
+                  maxLines: 2,
+                  overflow:TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Colors.black,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Text(
-                  'Lastname: ${event.room}',
+                Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children:
+                [Text(
+                  'Location: ${event.room}',
                   style: const TextStyle(
                     color: Colors.black,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Text(
-                  'Age: ${event.start}',
-                  style: const TextStyle(
-                    color: Colors.black,
+                  Text(
+                    '${event.eventdate} ${event.start}',
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
+                ]),
+                Text(
+                        'Track: ${event.track}',
+                        style: const TextStyle(
+                          color: Colors.black,
+                        ),
+                        maxLines: 2,
+                        overflow:TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        'Type: ${event.type}',
+                        style: const TextStyle(
+                          color: Colors.black,
+                        ),
+                        maxLines: 2,
+                      ),
               ],
+            ),
             ),
           ],
         ),

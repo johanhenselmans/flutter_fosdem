@@ -4,140 +4,189 @@ import 'package:fosdem/utils/network_util.dart';
 import 'package:fosdem/models/conference.dart';
 import 'package:fosdem/models/event.dart';
 import 'package:fosdem/utils/constants.dart';
+import 'dart:typed_data';
+import 'package:flutter/services.dart';
+import 'package:xml/xml.dart' as xml;
+import 'package:xml2json/xml2json.dart';
+import 'dart:convert';
+
+
+
+class ConferenceAndEvent{
+  Conference? conference;
+  List<Event>? eventList;
+
+  ConferenceAndEvent(this.conference, this.eventList);
+
+}
 
 class XMLDatasource {
   NetworkUtil _netUtil = NetworkUtil();
 
-  Future<Conference> getConference(int year) {
-    DateTime now =  DateTime.now();
-    int currentYear = now.year;
-    Conference aConference = Conference("", "", "");
+  ConferenceAndEvent transformConferenceAndEvent(Map response) {
+    var tmpEventList = [];
+    Conference? aConference;
+    String currentDate = "";
 
-    String mainURL = MAINURL;
-    if (year <  currentYear){
-      mainURL = ARCHIVEURL;
-    }
-    return _netUtil.getXML(mainURL + year.toString() +GETEVENTURL).then((dynamic res) {
-      List<Conference> conferenceList = [];
-      if (res != null) {
-        Map<String, dynamic> response = jsonDecode(res);
-        if (debug == DebugLevel.All || debug == DebugLevel.XMLJSONParsing) {
-          print("getConferences xmlres:");
-          print(res.toString());
-          print("jsonresponse:");
-          print(response.toString());
+    var tmpMapList = response['schedule'];
+
+
+    for (var entry in tmpMapList.entries) {
+      //This is the hlobal conference information, only one will be acvailable per schedule
+      if (entry.key == "conference") {
+        aConference =
+            Conference.fromMapToObject(
+                response['schedule']['conference']);
+        if (debug == DebugLevel.All ||
+            debug == DebugLevel.XMLJSONParsing) {
+          //print("RuntimeEventcatecory:"+conference.runtimeType.toString());
+          print("Conference ${aConference.title}");
+          print("Start: ${aConference.start}");
+          print("End RuntimeType: ${aConference.end.runtimeType
+              .toString()}");
+          print(
+              "days: ${aConference.days.toString()} Type: ${aConference
+                  .days
+                  .runtimeType.toString()}");
         }
-        if (response["error"] != null) throw Exception(response["error_msg"]);
-
-          aConference = Conference.fromMapToObject(response['schedule']['conference']);
-          if (debug == DebugLevel.All || debug == DebugLevel.XMLJSONParsing) {
-            //print("RuntimeEventcatecory:"+conference.runtimeType.toString());
-            print("Conference ${aConference.title}");
-            print("Start: ${aConference.start}");
-            print("End RuntimeType: ${aConference.end.runtimeType.toString()}");
-            print(
-                "days: ${aConference.days.toString()} Type: ${aConference.days.runtimeType.toString()}");
-          }
-          conferenceList.add(aConference);
       }
-      return aConference;
-    });
-  }
-
-  Future<List<Event>> getEvents(String mainURL, String year,
-      {String? eventcode}) {
-    return _netUtil
-        .getXMLHeavy(mainURL + year + GETEVENTURL)
-        .then((dynamic res) {
-      var tmpEventList = [];
-      if (res != null) {
-        Map<String, dynamic> response = jsonDecode(res);
-        if (debug == DebugLevel.All || debug == DebugLevel.XMLJSONParsing) {
-          print("getEvents xmlres:");
-          print(res.toString());
-          print("jsonresponse:");
-          print(response.toString());
+      if (entry.key == "day") {
+        List dayList = entry.value;
+        if (debug == DebugLevel.All ||
+            debug == DebugLevel.XMLJSONParsing) {
+          // if there is only one event, a hashmap is returned,
+          // otherwise a list of hashmaps.
+          // _InternalLinkedHashMap<String, dynamic>
+          // List<dynamic>
+          print("Type day list: " + dayList.runtimeType.toString());
         }
-        var tmpMapList = response['schedule'];
-        for (var entry in tmpMapList.entries) {
-          if (entry.key == "conference"){
-
-          }
-          if (entry.key == "day") {
-            List dayList = entry.value;
-            if (debug == DebugLevel.All || debug == DebugLevel.XMLJSONParsing) {
-              // if there is only one event, a hashmap is returned,
-              // otherwise a list of hashmaps.
-              // _InternalLinkedHashMap<String, dynamic>
-              // List<dynamic>
-              print("Type day list: " + dayList.runtimeType.toString());
+        if (dayList.runtimeType.toString().contains("List<dynamic>")) {
+          for (var listEntry in dayList) {
+            if (debug == DebugLevel.All ||
+                debug == DebugLevel.XMLJSONParsing) {
+              print(
+                  "Type listEntry: " + listEntry.runtimeType.toString());
             }
-            if (dayList.runtimeType.toString().contains("List<dynamic>")) {
-              for (var listEntry in dayList) {
-                if (debug == DebugLevel.All ||
-                    debug == DebugLevel.XMLJSONParsing) {
-                  print("Type listEntry: " + listEntry.runtimeType.toString());
-                }
-                for (var entry in listEntry.entries) {
-                  if (debug == DebugLevel.All ||
-                      debug == DebugLevel.XMLJSONParsing) {
-                    print("Type entry: " + listEntry.runtimeType.toString());
-                  }
-                  if (entry.key == "room") {
-                    var roomList = entry.value;
-                    for (var listEntry in roomList) {
-                      for (var mapEntry in listEntry.entries) {
-                        if (mapEntry.key == "name") {
-                          print('room: ' + mapEntry.value);
-                        }
-                        if (mapEntry.key == "event") {
-                          var eventsList = mapEntry.value;
-                          if (eventsList.runtimeType
-                              .toString()
-                              .contains("List<dynamic>")) {
-                            for (var eventsMap in eventsList) {
-                              //      var eventsMap = entry[0].value;
-//                      for (var eventMap in eventsMap.entries){
-                              if (debug == DebugLevel.All ||
-                                  debug == DebugLevel.XMLJSONParsing) {
-                                print("value event map: " +
-                                    eventsMap.runtimeType.toString());
-                              }
-                              Map anEventMap = returnAProperEventMap(eventsMap);
-                              tmpEventList.add(anEventMap);
-                            }
-                          } else {
-                            Map anEventMap = returnAProperEventMap(eventsList);
-                            tmpEventList.add(anEventMap);
-                          }
-                          //                     }
-                        }
+            for (var entry in listEntry.entries) {
+              if (debug == DebugLevel.All ||
+                  debug == DebugLevel.XMLJSONParsing) {
+                print("Type entry: " + listEntry.runtimeType.toString());
+              }
+              if (entry.key == "date") {
+                currentDate = entry.value;
+              }
+              if (entry.key == "room") {
+                var roomList = entry.value;
+                for (var listEntry in roomList) {
+                  for (var mapEntry in listEntry.entries) {
+                    if (mapEntry.key == "name") {
+                      if (debug == DebugLevel.All ||
+                          debug == DebugLevel.XMLJSONParsing) {
+                        print('room: ' + mapEntry.value);
                       }
+                    }
+                    if (mapEntry.key == "event") {
+                      var eventsList = mapEntry.value;
+                      if (eventsList.runtimeType
+                          .toString()
+                          .contains("List<dynamic>")) {
+                        for (var eventsMap in eventsList) {
+                          //      var eventsMap = entry[0].value;
+//                      for (var eventMap in eventsMap.entries){
+                          if (debug == DebugLevel.All ||
+                              debug == DebugLevel.XMLJSONParsing) {
+                            print("value event map: " +
+                                eventsMap.runtimeType.toString());
+                          }
+                          Map anEventMap = returnAProperEventMap(
+                              eventsMap, currentDate);
+                          tmpEventList.add(anEventMap);
+                        }
+                      } else {
+                        Map anEventMap = returnAProperEventMap(
+                            eventsList, currentDate);
+                        tmpEventList.add(anEventMap);
+                      }
+                      //                     }
                     }
                   }
                 }
               }
             }
-            if (debug == DebugLevel.All || debug == DebugLevel.XMLJSONParsing) {
-              print("End of day list: ");
-            }
           }
-          // there is only one map, not a list.
+        }
+        if (debug == DebugLevel.All ||
+            debug == DebugLevel.XMLJSONParsing) {
+          print("End of day list: ");
         }
       }
+      // there is only one map, not a list.
+    }
 
-      List<Event> eventList =
-          tmpEventList.map((value) => Event.fromMapToObject(value)).toList();
-      return eventList;
-    });
+
+    List<Event> eventList =
+    tmpEventList.map((value) => Event.fromMapToObject(value)).toList();
+
+    return ConferenceAndEvent(aConference, eventList);
   }
 
-  Map returnAProperEventMap(Map eventmap) {
+
+  Future<ConferenceAndEvent> getEvents(String year) async {
+//  Future<List<Event>> getEvents(String year) {
+    DateTime now = DateTime.now();
+    int currentYear = now.year;
+    String mainURL = MAINURL;
+    if (int.parse(year) < currentYear && int.parse(year) >= LOCALYEAR) {
+      mainURL = ARCHIVEURL;
+    }
+    if (int.parse(year) < REMOTEYEAR){
+      final JsonDecoder _decoder =  JsonDecoder();
+      xml.XmlDocument? _xmlDocument;
+      final xmlTransformer = Xml2Json();
+
+      String scheduleasset = "assets/schedule/fosdemschedule"+year+"xml"; //path to asset
+      String scheduleString = await rootBundle.loadString(scheduleasset); //load sound from assets
+//      _xmlDocument = xml.XmlDocument.parse(res);
+      xmlTransformer.parse(scheduleString);
+      var json = xmlTransformer.toGData();
+      Map<String, dynamic> response = jsonDecode(json);
+      if (debug == DebugLevel.All || debug == DebugLevel.XMLJSONParsing) {
+        print("getEvents xmlres:");
+        print(json.toString());
+        print("jsonresponse:");
+        print(response.toString());
+      }
+
+      return transformConferenceAndEvent(response);
+
+//you can load image file too
+    } else {
+      return _netUtil
+          .getXMLHeavy(mainURL + year + GETEVENTURL)
+          .then((dynamic res) {
+        if (res != null) {
+          Map<String, dynamic> response = jsonDecode(res);
+          if (debug == DebugLevel.All || debug == DebugLevel.XMLJSONParsing) {
+            print("getEvents xmlres:");
+            print(res.toString());
+            print("jsonresponse:");
+            print(response.toString());
+          }
+          return transformConferenceAndEvent(response);
+        }
+        List<Event> eventList =[];
+        return ConferenceAndEvent(Conference("","",""), eventList);
+      });
+    }
+  }
+
+  Map returnAProperEventMap(Map eventmap, String currentDate) {
     // we create an links list so that they can be stored as a json object in
     // the database: we find if there are any pages, if not, it will be ant empty list.
     // object stuff.
-    List<String?> linkList = [];
-    List<String?> personList = [];
+    List<dynamic?> linkList = [];
+    List<dynamic?> personList = [];
+    List<dynamic?> attachmentList = [];
     if (eventmap['links']['link'] != null) {
       if (debug == DebugLevel.All || debug == DebugLevel.XMLJSONParsing) {
         //print("We have links");
@@ -155,116 +204,72 @@ class XMLDatasource {
           .contains("List<dynamic>")) {
         List<dynamic> data = eventmap['links']['link'];
         data.forEach((mapvalue) {
-          linkList.add(mapvalue['\$t']);
+          linkList.add(mapvalue);
+          //linkList.add(mapvalue['\$t']);
         });
       } else {
         //There is only one value, which results in a map instead of a list.
         Map mapvalue = eventmap['links']['link'];
-        linkList.add(mapvalue['\$t']);
+        linkList.add(mapvalue);
+        //linkList.add(mapvalue['\$t']);
       }
-      //List<dynamic> theaudiopages = eventmap['Audio']['Page'];
-      //theaudiopages.forEach((mapvalue) {
-      //  audiopagesList.add(mapvalue['\$t']);
-      //});
     }
-    eventmap['Links'] = linkList;
+    if (eventmap['persons']['person'] != null) {
+      if (debug == DebugLevel.All || debug == DebugLevel.XMLJSONParsing) {
+        //print("We have links");
+        print("persons: " +
+            eventmap['persons'].toString() +
+            " runtimetype: persons" +
+            eventmap['persons'].runtimeType.toString() +
+            " runtimetype: person " +
+            eventmap['persons']['person'].runtimeType.toString());
+      }
+      //Map<String, dynamic> thelinks = eventmap['links'];
+      if (eventmap['persons']['person']
+          .runtimeType
+          .toString()
+          .contains("List<dynamic>")) {
+        List<dynamic> data = eventmap['persons']['person'];
+        data.forEach((mapvalue) {
+          personList.add(mapvalue);
+          //personList.add(mapvalue['\$t']);
+        });
+      } else {
+        //There is only one value, which results in a map instead of a list.
+        Map mapvalue = eventmap['persons']['person'];
+        personList.add(mapvalue);
+        //personList.add(mapvalue['\$t']);
+      }
+    }
+    if (eventmap['attachments']['attachment'] != null) {
+      if (debug == DebugLevel.All || debug == DebugLevel.XMLJSONParsing) {
+        //print("We have links");
+        print("attachements: " +
+            eventmap['attachments'].toString() +
+            " runtimetype: attachments" +
+            eventmap['attachments'].runtimeType.toString() +
+            " runtimetype: attachment " +
+            eventmap['attachments']['attachment'].runtimeType.toString());
+      }
+      //Map<String, dynamic> thelinks = eventmap['links'];
+      if (eventmap['attachments']['attachment']
+          .runtimeType
+          .toString()
+          .contains("List<dynamic>")) {
+        List<dynamic> data = eventmap['attachments']['attachment'];
+        data.forEach((mapvalue) {
+          attachmentList.add(mapvalue);
+        });
+      } else {
+        //There is only one value, which results in a map instead of a list.
+        Map mapvalue = eventmap['attachments']['attachment'];
+        attachmentList.add(mapvalue);
+      }
+    }
+    eventmap['eventdate'] = currentDate;
+    eventmap['links'] = linkList;
+    eventmap['persons'] = personList;
+    eventmap['attachments'] = attachmentList;
     return eventmap;
-  }
-
-  /*
-
-   */
-
-  Future<List<Event>> getEventPerYear(String mainURL, String year) {
-    return _netUtil
-        .getXMLHeavy(mainURL + year + GETEVENTURL)
-        .then((dynamic res) {
-      var tmpEventList = [];
-      if (res != null) {
-        Map<String, dynamic> response = jsonDecode(res);
-        if (debug == DebugLevel.All || debug == DebugLevel.XMLJSONParsing) {
-          print("geteventsperGroup res:");
-          print(res.toString());
-          print("jsonresponse:");
-          print(response.toString());
-        }
-        var tmpMapList = response['day'];
-        for (var entry in tmpMapList.entries) {
-          if (entry.key == "room") {
-            var eventmaps = entry.value;
-            if (debug == DebugLevel.All || debug == DebugLevel.XMLJSONParsing) {
-              // if there is only one event, a hashmap is returned,
-              // otherwise a list of hashmaps.
-              // _InternalLinkedHashMap<String, dynamic>
-              // List<dynamic>
-              print("value event map: " + eventmaps.runtimeType.toString());
-            }
-            if (eventmaps.runtimeType.toString().contains("List<dynamic>")) {
-              for (Map eventmap in eventmaps) {
-                Map anEventMap = returnAProperEventMap(eventmap);
-                tmpEventList.add(anEventMap);
-              }
-              // there is only one map, not a list.
-            } else {
-              Map anEventMap = returnAProperEventMap(eventmaps);
-              tmpEventList.add(anEventMap);
-            }
-          }
-        }
-      }
-
-      List<Event> eventList =
-          tmpEventList.map((value) => Event.fromMapToObject(value)).toList();
-      return eventList;
-    });
-  }
-
-/*
- this is a strange one: it actually returns all the events that are available in the group that the eventcode
- is a part of. Better not to  use.
- */
-  Future<List<Event>> getEventsPerEventCode(String mainURL, String year) {
-    return _netUtil
-        .getXMLHeavy(mainURL + year + GETEVENTURL)
-        .then((dynamic res) {
-      var tmpEventList = [];
-      if (res != null) {
-        Map<String, dynamic> response = jsonDecode(res);
-        if (debug == DebugLevel.All || debug == DebugLevel.XMLJSONParsing) {
-          print("getevents res:");
-          print(res.toString());
-          print("jsonresponse:");
-          print(response.toString());
-        }
-        var tmpMapList = response['Events'];
-        //Map mymap = tmpList['Event'];
-        for (var entry in tmpMapList.entries) {
-          if (entry.key == "Event") {
-            var eventmaps = entry.value;
-            if (debug == DebugLevel.All || debug == DebugLevel.XMLJSONParsing) {
-              // if there is only one event, a hashmap is returned,
-              // otherwise a list of hashmaps.
-              // _InternalLinkedHashMap<String, dynamic>
-              // List<dynamic>
-              print("value event map: " + eventmaps.runtimeType.toString());
-            }
-            if (eventmaps.runtimeType.toString().contains("List<dynamic>")) {
-              for (Map eventmap in eventmaps) {
-                Map aEventMap = returnAProperEventMap(eventmap);
-                tmpEventList.add(aEventMap);
-              }
-              // there is only one map, not a list.
-            } else {
-              Map aEventMap = returnAProperEventMap(eventmaps);
-              tmpEventList.add(aEventMap);
-            }
-          }
-        }
-      }
-
-      List<Event> eventList =
-          tmpEventList.map((value) => Event.fromMapToObject(value)).toList();
-      return eventList;
-    });
   }
 }

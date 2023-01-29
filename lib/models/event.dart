@@ -18,7 +18,6 @@ class Event extends ChangeNotifier {
         duration,
         room,
         slug,
-
         subtitle,
         track,
         type,
@@ -55,14 +54,15 @@ class Event extends ChangeNotifier {
   @JsonKey(name: 'description')
   String? description;
   @JsonKey(name: 'persons')
-  Map<String, dynamic>? persons;
+  List<dynamic> persons= [];
   @JsonKey(name: 'attachments')
-  Map<String, dynamic>? attachments;
+  List<dynamic> attachments= [];
   @JsonKey(name: 'links')
-  Map<String, dynamic>? links;
+  List<dynamic> links = [];
   @JsonKey(name: 'year')
   int? year;
-
+  @JsonKey(name: 'eventdate')
+  String? eventdate;
   /// A necessary factory constructor for creating a new Event instance
   /// from a map. Pass the map to the generated `_$EventFromJson()` constructor.
   /// The constructor is named after the source class, in this case, Event.
@@ -94,18 +94,20 @@ class Event extends ChangeNotifier {
       if(obj['persons']!=null){
         persons = jsonDecode(obj['persons']);
       } else {
-        persons = {};
+        persons = [];
       }
       if(obj['attachments']!=null){
         attachments = jsonDecode(obj['attachments']);
       } else {
-        attachments = {};
+        attachments = [];
       }
       if(obj['links']!=null){
         links = jsonDecode(obj['links']);
       } else {
-        links = {};
+        links = [];
       }
+      year = obj['year'];
+      eventdate = obj['eventdate'];
       // information comes from xml transferred to json: somehow ints are not
       // understood as ints, so we do it manually.
       // also, this should not contain the column localavailable, which indicates localavailability
@@ -127,8 +129,9 @@ class Event extends ChangeNotifier {
       links =  obj["links"];
       persons =  obj["persons"];
       attachments =  obj["attachments"];
+      eventdate = obj["eventdate"];
       DateFormat timeFormat = DateFormat('yyyy-MM-dd');
-      DateTime time = timeFormat.parse(start!);
+      DateTime time = timeFormat.parse(eventdate!);
       year = time.year;
 
     }
@@ -139,7 +142,9 @@ class Event extends ChangeNotifier {
   // if the data comes from xml, the localavailable is not filled
   Map<String, dynamic> toMap() {
     var map = new Map<String, dynamic>();
-    map['eventiD'] = event_id;
+    map['eventid'] = event_id;
+    map['eventdate'] = eventdate;
+    map['year'] = year;
     map['start'] = start;
     map['duration'] = duration  ;
     map['room'] = room;

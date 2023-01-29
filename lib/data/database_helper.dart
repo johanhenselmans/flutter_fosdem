@@ -40,17 +40,19 @@ class DatabaseHelper extends ChangeNotifier {
   }
   // here the upgrades since the last version are added.
   _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    await db.execute("ALTER TABLE Conference add column EventDownloaded INTEGER");
-    await db.execute("ALTER TABLE Event add column Description TEXT");
+    //await db.execute("ALTER TABLE Conference add column eventdownloaded INTEGER");
+    //await db.execute("ALTER TABLE Event add column description TEXT");
+    //await db.execute("ALTER TABLE Event add column eventdate TEXT");
+    //await db.execute("ALTER TABLE Event add column favorite INTEGER");
   }
 
   void _onCreate(Database db, int version) async {
     // When creating the db, create the table
     await db.execute(
-        "CREATE TABLE Conference(id INTEGER PRIMARY KEY AUTOINCREMENT, year INTEGER, title TEXT,  subtitle TEXT, venue TEXT, city TEXT, start TEXT, end TEXT, days INTEGER, daychange TEXT, timeslotduration TEXT)");
+        "CREATE TABLE Conference(id INTEGER PRIMARY KEY AUTOINCREMENT, year INTEGER, title TEXT,  subtitle TEXT, venue TEXT, city TEXT, start TEXT, end TEXT, days INTEGER, daychange TEXT, timeslotduration TEXT, eventdownloaded INTEGER)");
     await db.execute(
-        "CREATE TABLE Event(id INTEGER PRIMARY KEY AUTOINCREMENT, year INTEGER, eventid INTEGER, start TEXT, duration TEXT, room TEXT, slug TEXT, title TEXT, subtitle TEXT, track TEXT, type TEXT, language TEXT,  abstract TEXT, links TEXT, persons TEXT attachments TEXT)");
-    await db.execute("CREATE UNIQUE INDEX Idx_EventGroup on Event(EventId, YEar)");
+        "CREATE TABLE Event(id INTEGER PRIMARY KEY AUTOINCREMENT, year INTEGER, eventid INTEGER, start TEXT, duration TEXT, room TEXT, slug TEXT, title TEXT, subtitle TEXT, track TEXT, type TEXT, language TEXT,  abstract TEXT, description TEXT, eventdate TEXT, links TEXT, persons TEXT, attachments TEXT, favorite INTEGER)");
+    //await db.execute("CREATE UNIQUE INDEX Idx_Event on Event(eventid, year)");
     if (debug == DebugLevel.All || debug == DebugLevel.Database) {
       print("Created tables");
     }
@@ -107,7 +109,7 @@ class DatabaseHelper extends ChangeNotifier {
     // Get a reference to the database.
     final dbClient = await db;
     // Update the given Dog.
-    List<Map> mapConference = await dbClient.query('Conference', where: "Year = ?", whereArgs: [year]);
+    List<Map> mapConference = await dbClient.query('Conference', where: "year = ?", whereArgs: [year]);
     if (mapConference.length == 1) {
       Conference aConference = Conference.fromMapToObject(mapConference[0]);
       if (debug == DebugLevel.All || debug == DebugLevel.Database) {
@@ -120,48 +122,22 @@ class DatabaseHelper extends ChangeNotifier {
     }
   }
 
-  Future<void> updateConferenceFromInternet(int year) async {
-    XMLDatasource xmldatasrc = XMLDatasource();
-    final dbClient = await db;
-    //Get a conference;
-    //Then find the same Year in the database:
-    //If it is not available, insert the Year
-    Conference aConference = await xmldatasrc.getConference(year);
-    // only remove stuff if there are new ones.
-    if(aConference.year != null) {
-      await dbClient.delete('Conference');
-          List<Map> dbList = await dbClient.query(
-              'Conference', where: 'year = ?', whereArgs: [aConference.year]);
-          if (dbList.isNotEmpty) {
-            Map map = dbList[0];
-            // only update Year when there is a new revision or if there is no revision in the current Year
-            Conference tmpConference = Conference.fromMapToObject(map);
-            if (tmpConference.start != aConference.start) {
-              await updateConference(aConference);
-            }
-          } else {
-            await insertConference(aConference);
-          }
-      }
-    //notifyListeners();
-    }
 
-
-  Future<int> deleteCategories() async {
+  Future<int> deleteConferences() async {
     var dbClient = await db;
-    int res = await dbClient.delete("Year");
+    int res = await dbClient.delete("Conference");
     return res;
   }
-
+  //ToDo make sure one gets the conferences
   Future<List<Conference>>? getConferences(int year) {
     DatabaseHelper databaseHelper = DatabaseHelper();
-    databaseHelper.updateConferenceFromInternet(year);
     List<Conference> tmpConferenceList = [];
 //    return databaseHelper.getCategoriesFromDb().then((value) {
     databaseHelper.getConferencesFromDb().then((value) {
       tmpConferenceList = value;
-      if (tmpConferenceList.length == 0) {
-        tmpConferenceList.add(Conference("Fosdem", "A Future Fosdem Conference", "2050-02-01", end: "2050-02-02", city: "Brussels", venue:"ULB"));
+      if (tmpConferenceList.isEmpty) {
+        XMLDatasource xmldatasrc = XMLDatasource();
+        xmldatasrc.getEvents(year.toString());
       }
       return tmpConferenceList;
     });
@@ -206,7 +182,7 @@ class DatabaseHelper extends ChangeNotifier {
     final dbClient = await db;
     // Update the given Dog.
     List<Event> foundEvents = [];
-    List<Map> mapEvent = await dbClient.query('Event', where: "Year = ?", whereArgs: [year]);
+    List<Map> mapEvent = await dbClient.query('Event', where: "year = ?", whereArgs: [year]);
     mapEvent.forEach((aEventMap) {
       Event aEvent = Event.fromMapToObject(aEventMap);
       if (debug == DebugLevel.All || debug == DebugLevel.Database) {
@@ -243,7 +219,7 @@ class DatabaseHelper extends ChangeNotifier {
       try {
         await txn.update('Event', anEvent.toMap(),
             // Ensure that the Event has a matching id.
-            where: "EventCode = ?",
+            where: "eventid = ?",
             // Pass the Event's id as a whereArg to prevent SQL injection.
             whereArgs: [anEvent.event_id]);
       } on DatabaseException catch (e) {
@@ -277,7 +253,7 @@ class DatabaseHelper extends ChangeNotifier {
           //If the Events are picked up while the user is logged in, the meaning of available == 0
           //means he is overEvented. Every value above means he is available.
           //If the user is not logged in, every value > 1 (1= available, 0=unavailable), means not available
-          var dbList = await dbClient.query('Event', where: 'EventID = ?', whereArgs: [anEvent.event_id]);
+          var dbList = await dbClient.query('Event', where: 'eventid = ?', whereArgs: [anEvent.event_id]);
           if (dbList.isNotEmpty) {
             Map map = dbList[0];
             // only update Event when there is a new revision or if there is no revision of the current Event
@@ -308,7 +284,7 @@ class DatabaseHelper extends ChangeNotifier {
         // the delete  the Events from the database.
         int res = await dbClient.delete(
           'Event',
-          where: 'EventId not in (${EventIdSinqleQuoteString.substring(1)}) and year = ?',
+          where: 'eventid not in (${EventIdSinqleQuoteString.substring(1)}) and year = ?',
           whereArgs: [year],
         );
 //        int res = await dbClient.delete('Event', where: 'Eventcode not in (${Eventcodevalues.join(',')}) and groupcol = ?', whereArgs: [group],);
@@ -325,14 +301,17 @@ class DatabaseHelper extends ChangeNotifier {
   Future<void> updateEventsFromInternet({required String year}) async {
     XMLDatasource xmldatasrc = XMLDatasource();
     //Get a list of Event, depending on the argument;
-        List<Event> events =
-        await xmldatasrc.getEvents(MAINURL, year);
-        await putTheEventListIntoTheDatabase(events: events);
+        ConferenceAndEvent confandevents =
+        await xmldatasrc.getEvents(year);
+    if (debug == DebugLevel.All || debug == DebugLevel.Database) {
+      print("Got Events from Internet");
+    }
+        await putTheEventListIntoTheDatabase(events: confandevents.eventList);
     }
 
   Future<List<Event>> getEventsFromDb(int year) async {
     final dbClient = await db;
-    List<Map> mapEvent = await dbClient.query('Event', where: 'Year = ?', whereArgs: [year]);
+    List<Map> mapEvent = await dbClient.query('Event', where: 'year = ?', whereArgs: [year]);
     List<Event> listEvent = [];
     for (var map in mapEvent) {
       Event aEvent = Event.fromMapToObject(map);
@@ -372,16 +351,35 @@ class DatabaseHelper extends ChangeNotifier {
   Future<List<Conference>> getConferencesFromDb() async {
     //final dbClient = await (db as FutureOr<Database>);
     final dbClient = await db;
-    List<Map> mapYear = await dbClient.query('Year');
-    List<Conference> listcat = [];
-    for (var map in mapYear) {
-      Conference cat = Conference.fromMapToObject(map);
-      if (debug == DebugLevel.All || debug == DebugLevel.Database) {
-        print('getCategoriesFromDb: ' + cat.title!);
+    List<Map> mapConference = await dbClient.query('Conference');
+    List<Conference> listconf = [];
+    if(mapConference.isEmpty){
+      for (var year in getYearList()) {
+        updateEventsFromInternet(year: year.toString());
       }
-      listcat.add(cat);
+      mapConference = await dbClient.query('Conference');
     }
-    return listcat;
+    for (var map in mapConference) {
+      Conference conf = Conference.fromMapToObject(map);
+      if (debug == DebugLevel.All || debug == DebugLevel.Database) {
+        print('getConferenceFromDb: ' + conf.title!);
+      }
+      listconf.add(conf);
+    }
+    return listconf;
+  }
+  //The yearlist is only suited for picking up some of the stuff.
+  //2007 until 2011 were not delivered in xml format, and have been grazed and converted
+  //by hand, sort of.
+  List<int> getYearList() {
+    int beginYear = 2007;
+    DateTime now = DateTime.now();
+    int currentYear = now.year;
+    List<int> yearList = [];
+    for (int i = beginYear; i <= currentYear; i++) {
+      yearList.add(i);
+    }
+    return yearList;
   }
 
   //reset the Eventavailable setting for years, in case of a logout;
@@ -400,15 +398,8 @@ class DatabaseHelper extends ChangeNotifier {
     // so we do not delete these tasks
     DatabaseHelper dbhelper = DatabaseHelper();
     //await dbhelper.deleteAllEventsExceptGroup10();
-    int beginYear = 2007;
-    DateTime now =  DateTime.now();
-    int currentYear = now.year;
-    List<int> yearList = [];
-    for (int i = beginYear; i  <= currentYear ;  i++ ) {
-      yearList.add(i);
-    }
-    for (int year in yearList){
-      await dbhelper.updateConferenceFromInternet(year);
+     for (int year in getYearList()){
+      await dbhelper.updateEventsFromInternet(year: year.toString());
     }
     List<Conference> conferenceList = await dbhelper.getConferencesFromDb();
     conferenceList.forEach((aConference) async {
