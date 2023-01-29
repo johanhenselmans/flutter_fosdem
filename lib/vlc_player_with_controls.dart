@@ -258,10 +258,10 @@ class VlcPlayerWithControlsState extends State<VlcPlayerWithControls>
                     children: [
                       Text(
                         'Size: ' +
-                            (_controller!.value.size.width.toInt() ?? 0)
+                            (_controller!.value.size.width.toInt())
                                 .toString() +
                             'x' +
-                            (_controller!.value.size.height.toInt() ?? 0)
+                            (_controller!.value.size.height.toInt())
                                 .toString(),
                         textAlign: TextAlign.center,
                         overflow: TextOverflow.ellipsis,
