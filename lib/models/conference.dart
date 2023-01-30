@@ -58,24 +58,32 @@ class Conference {
 // year is only available in the database, not in the internet XML source, so we can determine
 // if it comes from the database by asking for the year value
   Conference.fromMapToObject(dynamic obj) {
-    title = obj['title'];
-    subtitle = obj['subtitle'];
-    venue = obj['venue'];
-    city = obj['city'];
-    start = obj['start'];
-    end = obj['end'];
     if (obj['year'] == null) {
+      title = obj["title"]["\$t"];
+      title = obj['title']["\$t"];
+      subtitle = obj['subtitle']["\$t"];
+      venue = obj['venue']["\$t"];
+      city = obj['city']["\$t"];
+      start = obj['start']["\$t"];
+      end = obj['end']["\$t"];
       //print("in from Map To Obj, Group:" + obj['Group'].toString());
       DateFormat timeFormat = DateFormat('yyyy-MM-dd');
       DateTime time = timeFormat.parse(obj['date']!);
       year = time.year;
       //print("in from Map To Obj, Sort:" + obj['Sort'].toString());
-      days = int.parse(obj['days']);
-      day_change = obj['daychange'];
-      timeslot_duration = obj['timeslotduration'];
+      days = int.parse(obj['days']["\$t"]);
+      day_change = obj['daychange']["\$t"];
+      timeslot_duration = obj['timeslotduration']["\$t"];
 
       //print("in from Map To Obj, Revision:" + obj['Revision'].toString());
     } else {
+      title = obj["title"];
+      title = obj['title'];
+      subtitle = obj['subtitle'];
+      venue = obj['venue'];
+      city = obj['city'];
+      start = obj['start'];
+      end = obj['end'];
       year = obj['year'];
       days = obj['days'];
       day_change = obj['day_change'];

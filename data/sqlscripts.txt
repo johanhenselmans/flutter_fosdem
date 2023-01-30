@@ -1,0 +1,30 @@
+sqlite3 fosdem.db 'select track from Event where year is 2023 group by track order by track ASC'
+sqlite3 fosdem.db 'select type from Event where year is 2023 group by type order by type ASC'
+sqlite3 fosdem.db 'select persons from Event where year is 2023 and persons is not null'
+select eventid, persons, json_array_length(persons), json_type(Event.persons), json_each.value from Event, json_each(Event.persons) where persons is not null;
+
+select json_extract(person.value, '$.id'),  json_extract(person.value, '$.$t'), person.eventid 
+from (select value,eventid from json_each(Event.persons ), Event where persons is not null) person;
+
+
+select json_extract(attachment.value, '$.href'),eventid
+from (select value, eventid  
+from json_each(Event.attachments ), Event where attachments is not null) attachment
+
+
+select json_extract(attachment.value, '$.$t'),
+json_extract(attachment.value, '$.type'),
+json_extract(attachment.value, '$.href'),
+eventid
+from (select value, eventid  
+from json_each(Event.attachments ), Event where attachments is not null) attachment
+
+
+select json_extract(link.value, '$.$t'),
+json_extract(link.value, '$.href'),eventid
+from (select value, eventid  
+from json_each(Event.links ), Event where links is not null) link
+
+
+
+

@@ -7,23 +7,23 @@ part of 'event.dart';
 // **************************************************************************
 
 Event _$EventFromJson(Map<String, dynamic> json) => Event(
-      json['title'] as String,
-      event_id: json['event id'] as int?,
-      start: json['start'] as String?,
-      duration: json['duration'] as String?,
-      room: json['room'] as String?,
-      slug: json['slug'] as String?,
-      subtitle: json['subtitle'] as String?,
-      track: json['track'] as String?,
-      type: json['type'] as String?,
-      language: json['language'] as String?,
-      abstract: json['abstract'] as String?,
-      description: json['description'] as String?,
-      persons: json['persons'] as Map<String, dynamic>?,
-      attachments: json['attachments'] as Map<String, dynamic>?,
-      links: json['links'] as Map<String, dynamic>?,
-      year: json['Year'] as int?,
-    );
+      json['title'],
+      event_id: json['event id'],
+      start: json['start'],
+      duration: json['duration'],
+      room: json['room'],
+      slug: json['slug'],
+      subtitle: json['subtitle'],
+      track: json['track'],
+      type: json['type'],
+      language: json['language'],
+      abstract: json['abstract'],
+      description: json['description'],
+      persons: json['persons'],
+      attachments: json['attachments'],
+      links: json['links'],
+      year: json['year'],
+    )..eventdate = json['eventdate'] as String?;
 
 Map<String, dynamic> _$EventToJson(Event instance) => <String, dynamic>{
       'event id': instance.event_id,
@@ -41,5 +41,6 @@ Map<String, dynamic> _$EventToJson(Event instance) => <String, dynamic>{
       'persons': instance.persons,
       'attachments': instance.attachments,
       'links': instance.links,
-      'Year': instance.year,
+      'year': instance.year,
+      'eventdate': instance.eventdate,
     };

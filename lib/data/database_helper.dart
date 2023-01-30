@@ -194,11 +194,25 @@ class DatabaseHelper extends ChangeNotifier {
     return foundEvents;
   }
 
+  Future<List<String>> getPersonsFromEvent(Event anEvent) async {
+    final dbClient = await db;
+    List<String> personNameList = [];
+    List<Map<String, Object?>> persons = await dbClient.rawQuery(
+  '''select json_extract(person.value, \'\$.\$t\') 
+  from (select value from json_each(Event.persons ), 
+  Event where eventid = ?) person''',
+  [anEvent.event_id]);
+    persons.forEach((person){
+      personNameList.add(person.values.toString());
+    });
+    return personNameList;
+  }
+
   Future<Event?> getEvent(Event event) async {
     // Get a reference to the database.
     final dbClient = await db;
     // Update the given Event.
-    List<Map> mapEvent = await dbClient.query('Event', where: "EventCode = ?", whereArgs: [event.event_id]);
+    List<Map> mapEvent = await dbClient.query('Event', where: "eventid = ?", whereArgs: [event.event_id]);
     if (mapEvent.length == 1) {
       Event anEvent = Event.fromMapToObject(mapEvent[0]);
       if (debug == DebugLevel.All || debug == DebugLevel.Database) {
