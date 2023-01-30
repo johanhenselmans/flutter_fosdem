@@ -11,7 +11,7 @@ class MultipleTab extends StatefulWidget {
 class _MultipleTabState extends State<MultipleTab> {
   List<VlcPlayerController>? controllers;
   List<String> urls = [
-    'http://video.fosdem.org/2014/Janson/Saturday/Welcome_to_FOSDEM_2014.webm',
+    'http://video.nl.netsense.fosdem.org/2014/Janson/Saturday/Welcome_to_FOSDEM_2014.webm',
     'https://www.tomandjerryonline.com/Videos/Ford%20Mondeo%20-%20Tom%20and%20Jerry.mov',
     'https://www.tomandjerryonline.com/Videos/TomAndJerryTales_HQ.wmv',
     'https://www.tomandjerryonline.com/Videos/tjpb1.mov'

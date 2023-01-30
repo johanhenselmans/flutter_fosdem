@@ -34,7 +34,7 @@ class DatabaseHelper extends ChangeNotifier {
 
   Future<Database> initDb() async {
     io.Directory documentsDirectory = await getApplicationDocumentsDirectory();
-    String path = join(documentsDirectory.path, "fosdem.db");
+    String path = join(documentsDirectory.path, "nl.netsense.fosdem.db");
     var theDb = await openDatabase(path, version: 1, onCreate: _onCreate, onUpgrade: _onUpgrade);
     return theDb;
   }

@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 // on the internet. Starting from 2012 they are available
 const int LOCALYEAR = 2007;
 const int REMOTEYEAR = 2012;
-const String PRODUCTIONURL = "https://fosdem.org/";
-const String ARCHIVEURL="https://archive.fosdem.org/";
+const String PRODUCTIONURL = "https://nl.netsense.fosdem.org/";
+const String ARCHIVEURL="https://archive.nl.netsense.fosdem.org/";
 String MAINURL = PRODUCTIONURL;
 const String GETEVENTURL="/schedule/xml";
 

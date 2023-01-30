@@ -37,7 +37,7 @@ class _SingleTabState extends State<SingleTab> {
     //
     listVideos!.add(VideoData(
       name: 'Hosdem',
-      path: 'http://video.fosdem.org/2014/Janson/Saturday/Welcome_to_FOSDEM_2014.webm',
+      path: 'http://video.nl.netsense.fosdem.org/2014/Janson/Saturday/Welcome_to_FOSDEM_2014.webm',
       type: VideoType.network,
     ));
     listVideos!.add(VideoData(
