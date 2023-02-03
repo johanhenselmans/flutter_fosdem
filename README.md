@@ -26,7 +26,7 @@ NVME sticks of 1 TB can be bought for 100 US$?
 
 I disgres. 
 
-This app should make it a lot easier to enhance, ad extra functionality etc. 
+This app should make it a lot easier to enhance, add extra functionality etc. 
 All the conference info is stored in a sqlite database.
 
 Enjoy!
