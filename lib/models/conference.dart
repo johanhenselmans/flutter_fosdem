@@ -1,7 +1,5 @@
+import 'package:intl/intl.dart';
 import 'package:json_annotation/json_annotation.dart';
-import  'package:intl/intl.dart';
-
-import 'event.dart';
 
 /// This allows the `Category` class to access private members in
 /// the generated file. The value for this is *.g.dart, where
@@ -12,8 +10,14 @@ part 'conference.g.dart';
 /// JSON serialization logic to be generated.
 @JsonSerializable(explicitToJson: true)
 class Conference {
-  Conference(this.title,  this.subtitle, this.start,
-      {this.end, this.venue, this.city,});
+  Conference(
+    this.title,
+    this.subtitle,
+    this.start, {
+    this.end,
+    this.venue,
+    this.city,
+  });
 
   @JsonKey(name: 'title')
   String? title;
@@ -36,7 +40,7 @@ class Conference {
   @JsonKey(name: 'year')
   int? year;
   @JsonKey(name: 'eventsdownloaded')
-  int? eventsdownloaded;
+  String eventsdownloaded = "";
 
   /// A necessary factory constructor for creating a new Category instance
   /// from a map. Pass the map to the generated `$UserFromJson()` constructor.
@@ -48,10 +52,10 @@ class Conference {
   /// to JSON. The implementation simply calls the private, generated
   /// helper method `$UserToJson`.
   Map<String, dynamic> toJson() => _$ConferenceToJson(this);
+
   // as the original XML data supplies (eg) int 1  as "1", we have to convert the int for storage in the Object and the database
   //static int fromJson(String String) => int.parse(String);
   //static String toJson(int anInt) => anInt.toString();
-
 
 //these maps may come from the XML datasource or from the database.
 //if the data comes from xml, than it is all strings, so we have to parse it to integers etc
@@ -59,41 +63,57 @@ class Conference {
 // if it comes from the database by asking for the year value
   Conference.fromMapToObject(dynamic obj) {
     if (obj['year'] == null) {
-      title = obj["title"]["\$t"];
-      title = obj['title']["\$t"];
-      subtitle = obj['subtitle']["\$t"];
-      venue = obj['venue']["\$t"];
-      city = obj['city']["\$t"];
-      start = obj['start']["\$t"];
-      end = obj['end']["\$t"];
-      //print("in from Map To Obj, Group:" + obj['Group'].toString());
+      //next we have to find out if it is from a local file, somehow these are better formet as
+      //the ones we get from the internet.
+      print("Runtimetype conference title: ${obj['title'].runtimeType.toString()}");
+      if (obj['title'].runtimeType.toString().contains('Map<String,') ) {
+        title = obj['title']['\$t'];
+        subtitle = obj['subtitle']['\$t'];
+        venue = obj['venue']['\$t'];
+        city = obj['city']['\$t'];
+        start = obj['start']['\$t'];
+        end = obj['end']['\$t'];
+        days = int.parse(obj['days']['\$t']);
+        day_change = obj['day_change']['\$t'];
+        timeslot_duration = obj['timeslot_duration']['\$t'];
+      } else {
+        title = obj['title'];
+        subtitle = obj['subtitle'];
+        venue = obj['venue'];
+        city = obj['city'];
+        start = obj['start'];
+        end = obj['end'];
+        days =  int.parse(obj['days']);
+        day_change = obj['day_change'];
+        timeslot_duration = obj['timeslot_duration'];
+      }
+      // Add the year to the mapping
       DateFormat timeFormat = DateFormat('yyyy-MM-dd');
-      DateTime time = timeFormat.parse(obj['date']!);
+      DateTime time = timeFormat.parse(start!);
       year = time.year;
-      //print("in from Map To Obj, Sort:" + obj['Sort'].toString());
-      days = int.parse(obj['days']["\$t"]);
-      day_change = obj['daychange']["\$t"];
-      timeslot_duration = obj['timeslotduration']["\$t"];
-
-      //print("in from Map To Obj, Revision:" + obj['Revision'].toString());
+      //When a mapping takes place from the internet, we store the date when
+      //this occured.
+      eventsdownloaded = DateTime.now().toUtc().toIso8601String();
     } else {
-      title = obj["title"];
+      year = obj['year'];
       title = obj['title'];
       subtitle = obj['subtitle'];
       venue = obj['venue'];
       city = obj['city'];
       start = obj['start'];
       end = obj['end'];
-      year = obj['year'];
       days = obj['days'];
       day_change = obj['day_change'];
       timeslot_duration = obj['timeslot_duration'];
+      if (obj['eventsdownloaded'] != null) {
+        eventsdownloaded = obj['eventsdownloaded'];
+      }
     }
   }
 
- //this is a mapping to the database
+  //this is a mapping to the database
   Map<String, dynamic> toMap() {
-    var map = new Map<String, dynamic>();
+    var map = Map<String, dynamic>();
     map['title'] = title;
     map['subtitle'] = subtitle;
     map['venue'] = venue;
@@ -104,6 +124,7 @@ class Conference {
     map['timeslotduration'] = timeslot_duration;
     map['daychange'] = day_change;
     map['year'] = year;
+    map['eventsdownloaded'] = eventsdownloaded;
     return map;
   }
 }

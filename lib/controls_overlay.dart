@@ -18,8 +18,8 @@ class ControlsOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedSwitcher(
-      duration: Duration(milliseconds: 50),
-      reverseDuration: Duration(milliseconds: 200),
+      duration: const Duration(milliseconds: 50),
+      reverseDuration: const Duration(milliseconds: 200),
       child: Builder(
         builder: (ctx) {
           if (controller!.value.isEnded || controller!.value.hasError) {
@@ -29,7 +29,7 @@ class ControlsOverlay extends StatelessWidget {
                   onPressed: _replay,
                   color: _iconColor,
                   iconSize: _replayButtonIconSize,
-                  icon: Icon(Icons.replay),
+                  icon:const  Icon(Icons.replay),
                 ),
               ),
             );
@@ -51,19 +51,19 @@ class ControlsOverlay extends StatelessWidget {
                           onPressed: () => _seekRelative(_seekStepBackward),
                           color: _iconColor,
                           iconSize: _seekButtonIconSize,
-                          icon: Icon(Icons.replay_10),
+                          icon: const Icon(Icons.replay_10),
                         ),
                         IconButton(
                           onPressed: _play,
                           color: _iconColor,
                           iconSize: _playButtonIconSize,
-                          icon: Icon(Icons.play_arrow),
+                          icon: const Icon(Icons.play_arrow),
                         ),
                         IconButton(
                           onPressed: () => _seekRelative(_seekStepForward),
                           color: _iconColor,
                           iconSize: _seekButtonIconSize,
-                          icon: Icon(Icons.forward_10),
+                          icon: const Icon(Icons.forward_10),
                         ),
                       ],
                     ),
@@ -88,13 +88,13 @@ class ControlsOverlay extends StatelessWidget {
                     onPressed: _replay,
                     color: _iconColor,
                     iconSize: _replayButtonIconSize,
-                    icon: Icon(Icons.replay),
+                    icon: const Icon(Icons.replay),
                   ),
                 ),
               );
 
             default:
-              return SizedBox.shrink();
+              return const SizedBox.shrink();
           }
         },
       ),
@@ -118,8 +118,6 @@ class ControlsOverlay extends StatelessWidget {
 
   /// Returns a callback which seeks the video relative to current playing time.
   Future<void> _seekRelative(Duration seekStep) async {
-    if (controller!.value.duration != null) {
       await controller!.seekTo(controller!.value.position + seekStep);
-    }
   }
 }

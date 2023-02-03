@@ -1,8 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:fosdem/models/conference.dart';
 import 'package:flutter/foundation.dart';
-import  'dart:convert';
-import  'package:intl/intl.dart';
 /// This allows the `User` class to access private members in
 /// the generated file. The value for this is *.g.dart, where
 /// the star denotes the source file name.

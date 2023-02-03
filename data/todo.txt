@@ -1,0 +1,4 @@
+Make sure downloading from data leads to refresh of list of conferences
+Add favorite to EVentItem
+Check Chromecast,  not working properly
+Only use VLC Player on Android and IOS, otherwise launch_url

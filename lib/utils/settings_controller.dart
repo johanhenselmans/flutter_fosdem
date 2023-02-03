@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart' show ChangeNotifier, ThemeMode;
+import 'package:fosdem/models/event.dart';
 
 import 'package:fosdem/utils/settings_service.dart' show SettingsService;
 
@@ -8,6 +9,7 @@ import 'package:fosdem/utils/settings_service.dart' show SettingsService;
 /// Controllers glue Data Services to Flutter Widgets. The SettingsController
 /// uses the SettingsService to store and retrieve user settings.
 class SettingsController with ChangeNotifier {
+
   SettingsController(this._settingsService);
 
   // Make SettingsService a private variable so it is not used directly.
@@ -24,6 +26,16 @@ class SettingsController with ChangeNotifier {
   String get fosdemSelectedYear => _fosdemSelectedYear;
   late String _fosdemCurrentYear;
   String get fosdemCurrentYear => _fosdemCurrentYear;
+  late Event _SelectedEvent;
+  Event get SelectedEvent => _SelectedEvent;
+  late String _SelectedVideo;
+  String get SelectedVideo => _SelectedVideo;
+  String _SelectedTrack = '';
+  String get SelectedTrack => _SelectedTrack;
+  bool _selectedTracksFromAllYears = false;
+  bool get selectedTracksFromAllYears => _selectedTracksFromAllYears;
+  bool _selectedFavoritesFromAllYears = false;
+  bool get selectedFavoritesFromAllYears => _selectedFavoritesFromAllYears;
 
   /// Load the user's settings from the SettingsService. It may load from a
   /// local database or the internet. The controller only knows it can load the
@@ -31,8 +43,12 @@ class SettingsController with ChangeNotifier {
   Future<void> loadSettings() async {
     _themeMode = await _settingsService.themeMode();
     _fosdemSelectedYear = (await _settingsService.getSelectedYear())!;
+
     _fosdemCurrentYear = (await _settingsService.getCurrentYear())!;
+//    _selectedEvent = (await _settingsService.getSelectedEvent())!;
     // Important! Inform listeners a change has occurred.
+    _selectedTracksFromAllYears = (await _settingsService.getSelectedTracksOffAllYears())!;
+    _selectedFavoritesFromAllYears = (await _settingsService.getSelectedFavoritesOffAllYears())!;
     notifyListeners();
   }
 
@@ -53,6 +69,57 @@ class SettingsController with ChangeNotifier {
     // SettingService.
     await _settingsService.updateThemeMode(newThemeMode);
   }
+
+  /// Update and persist the SelectedEvent.
+  Future<void> updateSelectedEvent(Event? anEvent) async {
+    if (anEvent == null) return;
+    //if (newFosdemPassword == null) return;
+
+    // Otherwise, store the new fosdemWifiName in memory
+    _SelectedEvent = anEvent;
+
+    // Important! Inform listeners a change has occurred.
+    notifyListeners();
+
+    // Persist the changes to a local database or the internet using the
+    // SettingService.
+    // await _settingsService.updateSelectedEvent(anEvent);
+  }
+
+  /// Update and persist the SelectedTrack.
+  Future<void> updateSelectedTrack(String? aTrack) async {
+    if (aTrack == null) return;
+    //if (newFosdemPassword == null) return;
+
+    // Otherwise, store the new fosdemWifiName in memory
+    _SelectedTrack = aTrack;
+
+    // Important! Inform listeners a change has occurred.
+    notifyListeners();
+
+    // Persist the changes to a local database or the internet using the
+    // SettingService.
+    // await _settingsService.updateSelectedTrack(aTrack);
+  }
+
+
+  /// Update and persist the SelectedVideo.
+  Future<void> updateSelectedVideo(String? aVideoURL) async {
+    if (aVideoURL == null) return;
+    //if (newFosdemPassword == null) return;
+
+    // Otherwise, store the new fosdemWifiName in memory
+    _SelectedVideo = aVideoURL;
+
+    // Important! Inform listeners a change has occurred.
+    notifyListeners();
+
+    // Persist the changes to a local database or the internet using the
+    // SettingService.
+    // await _settingsService.updateSelectedEvent(anEvent);
+  }
+
+
 
   /// Update and persist the SelectedYear.
   Future<void> updateSelectedYear(String? aYear) async {
@@ -83,6 +150,36 @@ class SettingsController with ChangeNotifier {
     // SettingService.
     await _settingsService.updateCurrentYear(aYear);
   }
+
+  Future<void> updateSelectedTracksOfAllYears(bool? aBool) async {
+    if (aBool == null) return;
+    //if (newFosdemPassword == null) return;
+
+    // Otherwise, store the new fosdemWifiName in memory
+    _selectedTracksFromAllYears = aBool;
+
+    // Important! Inform listeners a change has occurred.
+    notifyListeners();
+
+    // Persist the changes to a local database or the internet using the
+    // SettingService.
+    await _settingsService.updateSelectedTracksOffAllYears(aBool);
+  }
+
+  Future<void> updateSelectedFavoritesOfAllYears(bool? aBool) async {
+    if (aBool == null) return;
+
+    // Otherwise, store the new value in memory
+    _selectedFavoritesFromAllYears = aBool;
+
+    // Important! Inform listeners a change has occurred.
+    notifyListeners();
+
+    // Persist the changes to a local database or the internet using the
+    // SettingService.
+    await _settingsService.updateSelectedFavoritesOffAllYears(aBool);
+  }
+
 
 
 }

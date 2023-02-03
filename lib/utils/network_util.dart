@@ -3,22 +3,19 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
-import 'package:xml/xml.dart' as xml;
 import 'package:xml2json/xml2json.dart';
-//import 'package:connectivity/connectivity.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:fosdem/utils/constants.dart';
 
 class NetworkUtil {
   // next three lines makes this class a Singleton
-  static NetworkUtil _instance =  NetworkUtil.internal();
+  static final NetworkUtil _instance =  NetworkUtil.internal();
   NetworkUtil.internal();
   factory NetworkUtil() => _instance;
 //  String _connectionStatus = 'Unknown';
 //  final Connectivity _connectivity = Connectivity();
 
-  final JsonDecoder _decoder =  JsonDecoder();
-  xml.XmlDocument? _xmlDocument;
+  final JsonDecoder _decoder =  const JsonDecoder();
   final xmlTransformer = Xml2Json();
 
   Future<dynamic> getXML(String url) async {
@@ -31,7 +28,6 @@ class NetworkUtil {
       final response = await http.get(Uri.parse(url));
       res = response.body;
       statusCode = response.statusCode;
-      _xmlDocument = xml.XmlDocument.parse(res);
       xmlTransformer.parse(res);
       var json = xmlTransformer.toParker();
       return json;
@@ -89,7 +85,6 @@ class NetworkUtil {
       final response = await http.get(Uri.parse(url));
       res = response.body;
       statusCode = response.statusCode;
-      _xmlDocument = xml.XmlDocument.parse(res);
       xmlTransformer.parse(res);
       var json = xmlTransformer.toGData();
       return json;

@@ -6,7 +6,7 @@ part of 'conference.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-Conference _$ConferenceFromJson(Map<String, dynamic> json) => Conference(
+Conference _$ConferenceFromJson(Map json) => Conference(
       json['title'] as String?,
       json['subtitle'] as String?,
       json['start'] as String?,
@@ -18,7 +18,7 @@ Conference _$ConferenceFromJson(Map<String, dynamic> json) => Conference(
       ..day_change = json['day_change'] as String?
       ..timeslot_duration = json['timeslot_duration'] as String?
       ..year = json['year'] as int?
-      ..eventsdownloaded = json['eventsdownloaded'] as int?;
+      ..eventsdownloaded = json['eventsdownloaded'] as String;
 
 Map<String, dynamic> _$ConferenceToJson(Conference instance) =>
     <String, dynamic>{

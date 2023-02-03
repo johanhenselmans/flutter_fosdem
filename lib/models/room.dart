@@ -1,4 +1,3 @@
-import "package:fosdem/models/event.dart";
 import 'package:json_annotation/json_annotation.dart';
 
 part 'room.g.dart';
@@ -6,12 +5,12 @@ part 'room.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class Room {
-  Room(this.name, this.Event,
+  Room(this.name, this.event,
       );
   @JsonKey(name: 'name')
   String? name;
   @JsonKey(name: 'event')
-  List? Event;
+  List? event;
 
   factory Room.fromJson(Map<String, dynamic> json) =>
       _$RoomFromJson(json);
@@ -23,8 +22,7 @@ class Room {
 // as the original XML data supplies (eg) int 1  as "1", we have to convert the int for storage in the Object and the database
 //static int fromJson(String String) => int.parse(String);
 //static String toJson(int anInt) => anInt.toString();
-  Room.fromMapToObject(dynamic obj) {
-  }
+  Room.fromMapToObject(dynamic obj);
 
 
 }

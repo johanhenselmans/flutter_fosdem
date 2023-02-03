@@ -1,42 +1,58 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:fosdem/data/database_helper.dart';
-import 'package:fosdem/main.dart';
 
-//import 'package:fosdem_access/src/app.dart';
 import 'package:fosdem/utils/settings_controller.dart';
-import 'package:fosdem/utils/style.dart';
-import 'package:fosdem/utils/utils.dart';
-import 'package:fosdem/widgets/fosdem_app_bar.dart';
+import 'package:fosdem/widgets/empty_view.dart';
+import 'package:fosdem/widgets/event_item.dart';
 import 'package:searchable_listview/searchable_listview.dart';
-import 'package:flutter/material.dart';
-import '../models/event.dart';
+import 'package:fosdem/models/event.dart';
 
 /// Displays a list of Events.
-class EventList extends StatefulWidget {
+class EventList extends StatefulWidget with ChangeNotifier {
   final SettingsController settingsController;
 
-  const EventList({
+  EventList({
     Key? key,
     required this.settingsController,
   }) : super(key: key);
+  static const routeName = '/eventlist';
 
   @override
   State<EventList> createState() => _EventListState();
 }
 
 class _EventListState extends State<EventList> {
-  static const routeName = '/eventlist';
   DatabaseHelper databaseHelper = DatabaseHelper();
   List<Event>? eventList = [];
 
+  @override
+  void initState() {
+    super.initState();
+    widget.settingsController.addListener(_handleSettingsChanged);
+  }
+
+
+  @override
+  void dispose() {
+    widget.settingsController.removeListener(_handleSettingsChanged);
+    //widget.controller.removeListener(_handleFosdemChanged);
+    super.dispose();
+  }
+
+  void _handleSettingsChanged() {
+    if (widget.settingsController.fosdemCurrentYear != "") {
+    }
+    setState(() {});
+  }
+
+
   void _displayAlert(String aText, BuildContext context) {
     var alert = AlertDialog(
-      title: Text("Error"),
+      title: const Text("Error"),
       content: Text(aText),
       actions: <Widget>[
         TextButton(
-          child: Text('OK'),
+          child: const Text('OK'),
           onPressed: () {
             Navigator.of(context).pop();
           },
@@ -51,8 +67,14 @@ class _EventListState extends State<EventList> {
   }
 
   Future<List<Event>> getEventList() async {
-    List<Event> eventList = await databaseHelper.getEventsFromDb(
-        int.parse(widget.settingsController.fosdemCurrentYear));
+    List<Event> eventList = [];
+    if(widget.settingsController.SelectedTrack != ""){
+      eventList = await databaseHelper.getEventsFromDb(
+          int.parse(widget.settingsController.fosdemSelectedYear), track: widget.settingsController.SelectedTrack );
+    } else {
+      eventList = await databaseHelper.getEventsFromDb(
+          int.parse(widget.settingsController.fosdemSelectedYear), track: "");
+    }
     return eventList;
   }
 
@@ -65,8 +87,9 @@ class _EventListState extends State<EventList> {
 
   Widget showSearchableList(eventList) {
     return SearchableList<Event>(
+
       //initialList: eventList,
-      builder: (Event anEvent) => EventItem(event: anEvent),
+      builder: (Event anEvent) => EventItem(settingsController: widget.settingsController, event: anEvent),
       loadingWidget: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: const [
@@ -79,7 +102,7 @@ class _EventListState extends State<EventList> {
       ),asyncListCallback: () async {
         await Future.delayed(
           const Duration(
-            milliseconds: 10000,
+            milliseconds: 500,
           ),
         );
         return eventList;
@@ -104,7 +127,7 @@ class _EventListState extends State<EventList> {
             color: Colors.blue,
             width: 1.0,
           ),
-          borderRadius: BorderRadius.circular(10.0),
+          //borderRadius: BorderRadius.circular(10.0),
         ),
       ),
     );
@@ -113,120 +136,24 @@ class _EventListState extends State<EventList> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Container(
-        child: FutureBuilder<List<Event>>(
-            future: getEventList(),
-            builder:
-                (BuildContext context, AsyncSnapshot<List<Event>> snapshot) {
-              if (snapshot.hasData) {
-                eventList = snapshot.data;
-                return showSearchableList(eventList!);
-              } else {
-                return Column(children: <Widget>[
-                  SizedBox(
-                    child: CircularProgressIndicator(),
-                    width: 60,
-                    height: 60,
-                  ),
-                ]);
-              }
-            }),
-      ),
-    );
-  }
-}
-
-class EventItem extends StatelessWidget {
-  final Event event;
-
-  const EventItem({
-    Key? key,
-    required this.event,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Container(
-        //height: 60,
-        decoration: BoxDecoration(
-          color: Colors.grey[200],
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Row(
-          children: [
-            Expanded(child:
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  '${event.title}',
-                  maxLines: 2,
-                  overflow:TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                  ),
+      child: FutureBuilder<List<Event>>(
+          future: getEventList(),
+          builder:
+              (BuildContext context, AsyncSnapshot<List<Event>> snapshot) {
+            if (snapshot.hasData) {
+              eventList = snapshot.data;
+              return showSearchableList(eventList!);
+            } else {
+              return Column(children: const <Widget>[
+                SizedBox(
+                  width: 30,
+                  height: 30,
+                  child: CircularProgressIndicator(),
                 ),
-                Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children:
-                [Text(
-                  'Location: ${event.room}',
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                  Text(
-                    '${event.eventdate} ${event.start}',
-                    style: const TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ]),
-                Text(
-                        'Track: ${event.track}',
-                        style: const TextStyle(
-                          color: Colors.black,
-                        ),
-                        maxLines: 2,
-                        overflow:TextOverflow.ellipsis,
-                      ),
-                      Text(
-                        'Type: ${event.type}',
-                        style: const TextStyle(
-                          color: Colors.black,
-                        ),
-                        maxLines: 2,
-                      ),
-              ],
-            ),
-            ),
-          ],
-        ),
-      ),
+              ]);
+            }
+          }),
     );
   }
 }
 
-class EmptyView extends StatelessWidget {
-  const EmptyView({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: const [
-        Icon(
-          Icons.error,
-          color: Colors.red,
-        ),
-        Text('no event is found with this title'),
-      ],
-    );
-  }
-}

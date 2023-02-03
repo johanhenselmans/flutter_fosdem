@@ -4,12 +4,12 @@ import 'dart:ui' as ui;
 
 import 'package:fosdem/widgets/fosdem_back_button.dart';
 
-class fosdemAppBar extends StatefulWidget with PreferredSizeWidget {
+class FosdemAppBar extends StatefulWidget with PreferredSizeWidget {
   final String title;
   List<Widget>? actions;
   final bool canGoBack;
 
-  fosdemAppBar(
+  FosdemAppBar(
     this.title, {
     List<Widget>? actions,
     Key? key,
@@ -17,13 +17,13 @@ class fosdemAppBar extends StatefulWidget with PreferredSizeWidget {
   }) : super(key: key);
 
   @override
-  Size get preferredSize => new Size.fromHeight(AppBar().preferredSize.height);
+  Size get preferredSize => Size.fromHeight(AppBar().preferredSize.height);
 
   @override
-  _fosdemAppBarState createState() => _fosdemAppBarState();
+  _FosdemAppBarState createState() => _FosdemAppBarState();
 }
 
-class _fosdemAppBarState extends State<fosdemAppBar> {
+class _FosdemAppBarState extends State<FosdemAppBar> {
   @override
   Widget build(BuildContext context) {
     return ClipRect(
@@ -33,14 +33,14 @@ class _fosdemAppBarState extends State<fosdemAppBar> {
           sigmaY: 5.0,
         ),
         child: Container(
-          height: widget.preferredSize.height,
+          //height: widget.preferredSize.height,
           margin: EdgeInsets.only(
               top: MediaQuery.of(context).viewPadding.top, bottom: 0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Expanded(
+              /*Expanded(
                 flex: 1,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -50,29 +50,32 @@ class _fosdemAppBarState extends State<fosdemAppBar> {
                   ],
                 ),
               ),
-              Expanded(
-                flex: 2,
-                child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
+              */
+
+              SizedBox(
+                //flex: 1,
+                child:
+                //Column(
+                    //mainAxisAlignment: MainAxisAlignment.center,
+                //    crossAxisAlignment: CrossAxisAlignment.center,
+                //    children: [
                       Container(
-                        padding: EdgeInsets.fromLTRB(15, 7, 15, 7),
+                        padding: const EdgeInsets.fromLTRB(7.0, 7.0, 7.0, 7.0),
                         decoration: BoxDecoration(
                           color: fosdemBlue,
                           borderRadius: BorderRadius.circular(30),
                         ),
                         child: Text(
                           widget.title,
-                          style: TextStyle(
+                          style: const TextStyle(
                               color: fosdemWhite,
                               fontSize: 18,
                               fontWeight: FontWeight.w500),
                         ),
                       ),
-                    ]),
+                 //   ]),
               ),
-              Expanded(flex: 1, child: Container()),
+              //Expanded(flex: 1, child: Container()),
             ],
           ),
         ),

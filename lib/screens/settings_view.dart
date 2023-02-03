@@ -1,13 +1,8 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:go_router/go_router.dart';
-import 'package:package_info_plus/package_info_plus.dart';
-
 import 'package:fosdem/utils/settings_controller.dart';
 import 'package:fosdem/utils/style.dart';
-import 'package:fosdem/utils/utils.dart';
-import 'dart:io' show Platform;
+import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 /// Displays the various settings that can be customized by the user.
 ///
@@ -15,7 +10,7 @@ import 'dart:io' show Platform;
 /// Widgets that listen to the SettingsController are rebuilt.
 //class SettingsView extends StatelessWidget {
 
-class SettingsView extends StatefulWidget  with ChangeNotifier {
+class SettingsView extends StatefulWidget with ChangeNotifier {
   SettingsController controller;
 
   SettingsView({Key? key, required this.controller}) : super(key: key);
@@ -27,14 +22,17 @@ class SettingsView extends StatefulWidget  with ChangeNotifier {
 class _SettingsViewState extends State<SettingsView> {
   String currentYear = "";
   String selectedYear = "";
+  bool isFavoritesChecked = false;
+  bool isTracksChecked = false;
 
   int _tapcount = 0;
-
 
   @override
   void initState() {
     super.initState();
     widget.controller.addListener(_handleSettingsChanged);
+    isFavoritesChecked = widget.controller.selectedFavoritesFromAllYears;
+    isTracksChecked = widget.controller.selectedTracksFromAllYears;
   }
 
   @override
@@ -47,10 +45,13 @@ class _SettingsViewState extends State<SettingsView> {
   void _handleSettingsChanged() {
     if (widget.controller.fosdemCurrentYear != "") {
       currentYear = widget.controller.fosdemCurrentYear;
-      selectedYear = widget.controller.fosdemSelectedYear;
-      setState(() {});
     }
+    selectedYear = widget.controller.fosdemSelectedYear;
+    isFavoritesChecked = widget.controller.selectedFavoritesFromAllYears;
+    isTracksChecked = widget.controller.selectedTracksFromAllYears;
+    setState(() {});
   }
+
 /*
   void _handleFosdemChanged() {
     ServerAddress? anAddress;
@@ -79,95 +80,116 @@ class _SettingsViewState extends State<SettingsView> {
     }
   }
 
-
+  void gotoCurrentConference() {
+    widget.controller.updateSelectedYear(widget.controller.fosdemCurrentYear);
+    widget.controller.updateSelectedTrack('');
+    GoRouter.of(context).pushReplacement('/eventlist');
+  }
 
   @override
   Widget build(BuildContext context) {
     //});
-    return
-        ListView(
+    return ListView(
       //padding: const EdgeInsets.only(bottom: kFloatingActionButtonMargin + 38),
       padding: const EdgeInsets.all(24),
       children: [
-        Icon(Icons.sensor_door_rounded, size: 32),
-        Text("Huidige Fosdem:",
+        const Icon(Icons.sensor_door_rounded, size: 32),
+        const Text("Chosen Fosdem Year:",
             textAlign: TextAlign.center,
             style: TextStyle(fontWeight: FontWeight.bold)),
-        Text("${selectedYear}", textAlign: TextAlign.center),
+        Text(widget.controller.fosdemSelectedYear, textAlign: TextAlign.center),
         //Text("server: ${widget.controller.fosdemServerIP}",
         //    textAlign: TextAlign.center),
-        SizedBox(
+        const SizedBox(
           height: 20,
         ),
-        Text("\nLaatste Fosdem:",
+        const Text("\nLaatste Fosdem:",
             textAlign: TextAlign.center,
             style: TextStyle(fontWeight: FontWeight.bold)),
-        Text("Wifi: ${currentYear} ", textAlign: TextAlign.center),
+        Text("Current Fosdem: ${widget.controller.fosdemCurrentYear}",
+            textAlign: TextAlign.center),
         ElevatedButton(
           style: fosdemElevatedButtonStyle,
           child: const Text(
-            "Ga naar Laatste Fosdem",
+            "Go To Current FosDem",
             textAlign: TextAlign.center,
           ),
-          onPressed:() => (){ bool value = true;
-                if (value) {
-                  GoRouter.of(context).pushReplacement('/');
-                } else {
-                  if (this.mounted) {
-                    setState(() {});
-                  }
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text(
-                        "Kon geeen verbinding maken met deze WiFi. U bent vermoedelijk niet in de buurt."),
-                  ));
-                }
-          },
+          onPressed: () => gotoCurrentConference(),
         ),
-        SizedBox(
+        const SizedBox(
           height: 20,
         ),
-        SizedBox(
+        CheckboxListTile(
+            title: Text("Display favorites of all years in the favorites list"),
+            value: isFavoritesChecked,
+            onChanged: (bool? value) {
+              setState(() {
+                isFavoritesChecked = value!;
+              });
+              if (isFavoritesChecked) {
+                widget.controller.updateSelectedFavoritesOfAllYears(true);
+              } else {
+                widget.controller.updateSelectedFavoritesOfAllYears(false);
+              }
+            }),
+        const SizedBox(
+          height: 20,
+        ),
+        CheckboxListTile(
+            title: Text("Display tracks of all years in the tracks list"),
+            value: isTracksChecked,
+            onChanged: (bool? value) {
+              setState(() {
+                isTracksChecked = value!;
+              });
+              if (isTracksChecked) {
+                widget.controller.updateSelectedTracksOfAllYears(true);
+              } else {
+                widget.controller.updateSelectedTracksOfAllYears(false);
+              }
+            }),
+        const SizedBox(
           height: 40,
         ),
         GestureDetector(
-        onTap: _countTaps,
-        child: FutureBuilder<PackageInfo>(
-            future: getPackageInfo(),
-            builder:
-                (BuildContext context, AsyncSnapshot<PackageInfo> snapshot) {
-              if (snapshot.hasData) {
-                PackageInfo? packageInfo = snapshot.data;
-                return Column(children: [
-                  Text('Deze App heet: ${packageInfo!.appName}'),
-                  Text(
-                      'Versie:  ${packageInfo.version}, build ${packageInfo.buildNumber}'),
-                ]);
-              } else if (snapshot.hasError) {
-                return Text('I could not find a version of the app');
-              } else {
-                List<Widget> children;
-                children = const <Widget>[
-                  SizedBox(
-                    width: 60,
-                    height: 60,
-                    child: CircularProgressIndicator(),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(top: 16),
-                    child: Text('Awaiting result...'),
-                  ),
-                ];
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: children,
-                  ),
-                );
-              }
-            }),
-    )
-
-    ],
+          onTap: _countTaps,
+          child: FutureBuilder<PackageInfo>(
+              future: getPackageInfo(),
+              builder:
+                  (BuildContext context, AsyncSnapshot<PackageInfo> snapshot) {
+                if (snapshot.hasData) {
+                  PackageInfo? packageInfo = snapshot.data;
+                  return Column(children: [
+                    Text('App: ${packageInfo!.appName}'),
+                    Text('Package: ${packageInfo!.packageName}'),
+                    Text(
+                        'Version:  ${packageInfo.version}, build ${packageInfo.buildNumber}'),
+                  ]);
+                } else if (snapshot.hasError) {
+                  return const Text('I could not find a version of the app');
+                } else {
+                  List<Widget> children;
+                  children = const <Widget>[
+                    SizedBox(
+                      width: 60,
+                      height: 60,
+                      child: CircularProgressIndicator(),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(top: 16),
+                      child: Text('Awaiting result...'),
+                    ),
+                  ];
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: children,
+                    ),
+                  );
+                }
+              }),
+        )
+      ],
     );
   }
 }

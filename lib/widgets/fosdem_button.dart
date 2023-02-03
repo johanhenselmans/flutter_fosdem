@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:fosdem/utils/style.dart';
 
 var fosdemBorderRadius = BorderRadius.circular(8.0);
@@ -24,37 +22,35 @@ class FosdemButtonDONOTUSE_NOT_FINISHED extends StatelessWidget {
         borderRadius: fosdemBorderRadius,
         color: Colors.transparent,
         child: InkWell(
-          onTap: this.onPressed,
-          child: Container(
-            child: Row(
-              children: <Widget>[
-                iconData != null
-                    ? LayoutBuilder(builder: (context, constraints) {
-                        return Container(
-                          height: constraints.maxHeight,
-                          width: constraints.maxHeight,
-                          decoration: BoxDecoration(
-                            color: fosdemBlue,
-                            borderRadius: fosdemBorderRadius,
-                          ),
-                          child: const Icon(
-                            Icons.settings,
-                            color: Colors.white,
-                          ),
-                        );
-                      })
-                    : Container(),
-                Expanded(
-                  child: Text(
-                    text,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 14,
-                    ),
+          onTap: onPressed,
+          child: Row(
+            children: <Widget>[
+              iconData != null
+                  ? LayoutBuilder(builder: (context, constraints) {
+                      return Container(
+                        height: constraints.maxHeight,
+                        width: constraints.maxHeight,
+                        decoration: BoxDecoration(
+                          color: fosdemBlue,
+                          borderRadius: fosdemBorderRadius,
+                        ),
+                        child: const Icon(
+                          Icons.settings,
+                          color: Colors.white,
+                        ),
+                      );
+                    })
+                  : Container(),
+              Expanded(
+                child: Text(
+                  text,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 14,
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

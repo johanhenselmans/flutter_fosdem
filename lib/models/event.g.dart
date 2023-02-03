@@ -6,9 +6,9 @@ part of 'event.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-Event _$EventFromJson(Map<String, dynamic> json) => Event(
+Event _$EventFromJson(Map json) => Event(
       json['title'],
-      event_id: json['event id'],
+      eventId: json['event id'],
       start: json['start'],
       duration: json['duration'],
       room: json['room'],
@@ -26,7 +26,7 @@ Event _$EventFromJson(Map<String, dynamic> json) => Event(
     )..eventdate = json['eventdate'] as String?;
 
 Map<String, dynamic> _$EventToJson(Event instance) => <String, dynamic>{
-      'event id': instance.event_id,
+      'event id': instance.eventId,
       'start': instance.start,
       'duration': instance.duration,
       'room': instance.room,

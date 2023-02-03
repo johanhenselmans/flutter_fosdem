@@ -6,12 +6,12 @@ part of 'room.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-Room _$RoomFromJson(Map<String, dynamic> json) => Room(
+Room _$RoomFromJson(Map json) => Room(
       json['name'] as String?,
       json['event'] as List<dynamic>?,
     );
 
 Map<String, dynamic> _$RoomToJson(Room instance) => <String, dynamic>{
       'name': instance.name,
-      'event': instance.Event,
+      'event': instance.event,
     };

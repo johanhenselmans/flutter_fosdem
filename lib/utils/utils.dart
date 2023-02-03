@@ -1,8 +1,4 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:fosdem/data/database_helper.dart';
-
 
 void displayAlert(String aTitle, String aText, BuildContext context) {
   var alert = AlertDialog(
@@ -10,7 +6,7 @@ void displayAlert(String aTitle, String aText, BuildContext context) {
     content: Text(aText),
     actions: <Widget>[
       TextButton(
-        child: Text('OK'),
+        child: const Text('OK'),
         onPressed: () {
           Navigator.of(context).pop();
         },
