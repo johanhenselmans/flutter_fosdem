@@ -24,7 +24,7 @@ I mean, seriously, who in their right mind asks 400 US$ for a measly 16 GB extra
 memory and 200 US$ for an extra 512 GB SSD in a desktop machine in 2023, while SSD
 NVME sticks of 1 TB can be bought for 100 US$?
 
-I disgres. 
+I digress. 
 
 This app should make it a lot easier to enhance, add extra functionality etc. 
 All the conference info is stored in a sqlite database.
